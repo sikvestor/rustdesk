@@ -38,14 +38,14 @@ jobs:
           runVcpkgInstall: true
           vcpkgJsonGlob: 'vcpkg.json'
 
-      - name: Install LLVM
-        run: choco install -y llvm --version=15.0.7
-
       - name: Setup environment
-        shell: bash
+        shell: pwsh
         run: |
-          echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
-          echo "LIBCLANG_PATH=C:/Program Files/LLVM/bin" >> $GITHUB_ENV
+          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" >> $env:GITHUB_ENV
+          $llvmPath = "C:\Program Files\LLVM\bin"
+          if (Test-Path $llvmPath) {
+            echo "LIBCLANG_PATH=$llvmPath" >> $env:GITHUB_ENV
+          }
 
       - name: Build Flutter
         run: |
