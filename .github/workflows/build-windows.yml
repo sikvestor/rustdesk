@@ -44,31 +44,30 @@ jobs:
         run: |
           echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" >> $env:GITHUB_ENV
           $llvmPath = "C:\Program Files\LLVM\bin"
-          if (Test-Path $llvmPath) {
-            echo "LIBCLANG_PATH=$llvmPath" >> $env:GITHUB_ENV
-          }
+          echo "LIBCLANG_PATH=$llvmPath" >> $env:GITHUB_ENV
+
+      - name: Install bridge codegen
+        run: |
+          cargo install flutter_rust_bridge_codegen --version 1.80.1 --features uuid
 
       - name: Generate bridge
-        shell: bash
+        shell: pwsh
         run: |
-          cd flutter
+          Push-Location flutter
           flutter pub get
-          ~/.cargo/bin/flutter_rust_bridge_codegen generate || cargo install flutter_rust_bridge_codegen && flutter_rust_bridge_codegen generate
+          Pop-Location
+          ~/.cargo/bin/flutter_rust_bridge_codegen --rust-input ./src/flutter_ffi.rs --dart-output ./flutter/lib/generated_bridge.dart
 
-      - name: Build Flutter
+      - name: Build Windows
+        shell: pwsh
         run: |
           flutter config --enable-windows-desktop
-          cd flutter
+          Push-Location flutter
           flutter build windows --release
+          Pop-Location
 
-      - name: Build Rust portable
-        shell: bash
-        run: |
-          python build.py --portable --hwcodec --flutter
-
-      - name: Upload EXE
+      - name: Find and upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: rustdesk-${{ env.VERSION }}-windows-x64
-          path: |
-            flutter/build/windows/x64/runner/Release/rustdesk.exe
+          path: flutter/build/windows/x64/runner/Release/
