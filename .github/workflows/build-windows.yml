@@ -6,7 +6,7 @@ on:
 env:
   RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
   RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
-  FLUTTER_VERSION: "3.24.5"
+  FLUTTER_VERSION: "3.22.3"
   VCPKG_COMMIT_ID: "120deac3062162151622ca4860575a33844ba10b"
   VERSION: "1.4.3"
 
@@ -25,6 +25,7 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
+          cache: true
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -47,11 +48,17 @@ jobs:
             echo "LIBCLANG_PATH=$llvmPath" >> $env:GITHUB_ENV
           }
 
+      - name: Generate bridge
+        shell: bash
+        run: |
+          cd flutter
+          flutter pub get
+          flutter_rust_bridge_codegen generate
+
       - name: Build Flutter
         run: |
           flutter config --enable-windows-desktop
           cd flutter
-          flutter pub get
           flutter build windows --release
 
       - name: Build Rust portable
