@@ -31,14 +31,12 @@ jobs:
         with:
           targets: x86_64-pc-windows-msvc
 
-      - name: Setup vcpkg with cache
+      - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
-
-      - name: Install vcpkg deps
-        run: |
-          vcpkg install libvpx:x64-windows-static libyuv:x64-windows-static opus:x64-windows-static aom:x64-windows-static
+          runVcpkgInstall: true
+          vcpkgJsonGlob: 'vcpkg.json'
 
       - name: Install LLVM
         run: choco install -y llvm --version=15.0.7
@@ -57,6 +55,7 @@ jobs:
           flutter build windows --release
 
       - name: Build Rust portable
+        shell: bash
         run: |
           python build.py --portable --hwcodec --flutter
 
